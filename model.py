@@ -152,3 +152,41 @@ if predictions["predicted_rate"].isna().any():
 predictions.to_csv("validation_predictions.csv", index=False)
 
 print("Created validation_predictions.csv")
+
+
+# December predictions for the required chart
+# December predictions for the required chart
+december = pd.DataFrame({
+    "pickup": ["Lexington"] * 31,
+    "delivery": ["Fort Wayne"] * 31,
+    "distance": [360.0] * 31,
+    "equipment": ["Dry Van"] * 31,
+    "weight": [32000.0] * 31,
+    "date": pd.date_range("2025-12-01", "2025-12-31")
+})
+
+pickup_location = df[df["pickup"] == "Lexington"].iloc[0]
+delivery_location = df[df["delivery"] == "Fort Wayne"].iloc[0]
+
+december["pickup_lat"] = pickup_location["pickup_lat"]
+december["pickup_lon"] = pickup_location["pickup_lon"]
+december["delivery_lat"] = delivery_location["delivery_lat"]
+december["delivery_lon"] = delivery_location["delivery_lon"]
+
+december = add_features(december)
+
+december_predictions = final_model.predict(december[FEATURES])
+december_predictions = np.maximum(december_predictions, 0.01)
+
+december_output = december[
+    ["pickup", "delivery", "distance", "equipment", "weight", "date"]
+].copy()
+
+december_output["predicted_rate"] = december_predictions
+
+december_output.to_csv(
+    "data/december_chart_inputs.csv",
+    index=False
+)
+
+print("Created data/december_chart_inputs.csv")
